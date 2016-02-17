@@ -4,7 +4,8 @@ import autowire._
 import rx._
 import spatutorial.client.ukko._
 import spatutorial.shared.{TodoItem, Api}
-import boopickle.Default._
+//import boopickle.Default._
+import upickle.default._
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.runNow
 
 case object RefreshTodos

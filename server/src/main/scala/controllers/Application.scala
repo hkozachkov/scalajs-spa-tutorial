@@ -2,16 +2,21 @@ package controllers
 
 import java.nio.ByteBuffer
 
-import boopickle.Default._
+import upickle.default
+import upickle.default._
+
+import play.api.libs.json._
+import play.api.libs.functional.syntax._
+
 import play.api.mvc._
 import services.ApiService
 import spatutorial.shared.Api
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-object Router extends autowire.Server[ByteBuffer, Pickler, Pickler] {
-  override def read[R: Pickler](p: ByteBuffer) = Unpickle[R].fromBytes(p)
-  override def write[R: Pickler](r: R) = Pickle.intoBytes(r)
+object Router extends autowire.Server[String, Reader, Writer] {
+  override def read[Result: Reader](p: String) = default.read[Result](p)
+  override def write[Result: Writer](r: Result) = default.write(r)
 }
 
 object Application extends Controller {
@@ -21,20 +26,19 @@ object Application extends Controller {
     Ok(views.html.index("SPA tutorial"))
   }
 
-  def autowireApi(path: String) = Action.async(parse.raw) {
+  def autowireApi(path: String) = Action.async(parse.json) {
     implicit request =>
       println(s"Request path: $path")
 
-      // get the request body as Array[Byte]
-      val b = request.body.asBytes(parse.UNLIMITED).get
+      // get the request body as string
+      val b = request.body.as[String]
 
       // call Autowire route
       Router.route[Api](apiService)(
-        autowire.Core.Request(path.split("/"), Unpickle[Map[String, ByteBuffer]].fromBytes(ByteBuffer.wrap(b)))
-      ).map(buffer => {
-        val data = Array.ofDim[Byte](buffer.remaining())
-        buffer.get(data)
-        Ok(data)
+        autowire.Core.Request(path.split("/"), read[Map[String, String]](b))
+      ).map(json=> {
+
+        Ok(json)
       })
   }
 

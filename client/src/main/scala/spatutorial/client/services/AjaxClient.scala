@@ -2,24 +2,26 @@ package spatutorial.client.services
 
 import java.nio.ByteBuffer
 
-import boopickle.Default._
+import upickle.default
+
+//import boopickle.Default._
+import upickle.default._
 import org.scalajs.dom
 
 import scala.concurrent.Future
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.runNow
 import scala.scalajs.js.typedarray._
 
-object AjaxClient extends autowire.Client[ByteBuffer, Pickler, Pickler] {
-  override def doCall(req: Request): Future[ByteBuffer] = {
-    // Scala.js DOM 0.8.1 supports binary data, earlier versions don't
+object AjaxClient extends autowire.Client[String, Reader, Writer] {
+  override def doCall(req: Request): Future[String] = {
+
     dom.ext.Ajax.post(
       url = "/api/" + req.path.mkString("/"),
-      data = Pickle.intoBytes(req.args),
-      responseType = "arraybuffer",
-      headers = Map("Content-Type" -> "application/octet-stream")
-    ).map(r => TypedArrayBuffer.wrap(r.response.asInstanceOf[ArrayBuffer]))
+      data = write(req.args),
+      headers = Map("Content-Type" -> "application/json;charset=UTF-8")
+    ).map(_.responseText)
   }
 
-  override def read[Result: Pickler](p: ByteBuffer) = Unpickle[Result].fromBytes(p)
-  override def write[Result: Pickler](r: Result) = Pickle.intoBytes(r)
+  override def read[Result: Reader](p: String) = default.read[Result](p)
+  override def write[Result: Writer](r: Result) = default.write(r)
 }

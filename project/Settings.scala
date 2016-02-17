@@ -35,6 +35,7 @@ object Settings {
     val log4js = "1.4.10"
     val autowire = "0.2.5"
     val booPickle = "1.1.0"
+    val uPickle = "0.3.8"
     val uTest = "0.3.1"
 
     val react = "0.12.2"
@@ -52,7 +53,8 @@ object Settings {
   val sharedDependencies = Def.setting(Seq(
     "com.lihaoyi" %%% "autowire" % versions.autowire,
     "me.chrons" %%% "boopickle" % versions.booPickle,
-    "com.lihaoyi" %%% "utest" % versions.uTest
+    "com.lihaoyi" %%% "utest" % versions.uTest,
+    "com.lihaoyi" %%% "upickle" % versions.uPickle
   ))
 
   /** Dependencies only used by the JVM project */
