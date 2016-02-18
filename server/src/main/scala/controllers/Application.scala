@@ -26,16 +26,19 @@ object Application extends Controller {
     Ok(views.html.index("SPA tutorial"))
   }
 
-  def autowireApi(path: String) = Action.async(parse.json) {
+  def autowireApi(path: String) = Action.async(parse.tolerantText) {
     implicit request =>
       println(s"Request path: $path")
 
-      // get the request body as string
-      val b = request.body.as[String]
+      // get the request body as string (note to henry: it's already a string, idiot. look
+      // at the parser you passed to the Action
+      val b = request.body
 
-      // call Autowire route
+      // call Autowire route .... this needs to be changed to not rely on split because that's
+      // ugly as hell. Maybe make this a higher order function like a route generator?
+      //
       Router.route[Api](apiService)(
-        autowire.Core.Request(path.split("/"), read[Map[String, String]](b))
+        autowire.Core.Request(path.split("/"), default.read[Map[String, String]](b))
       ).map(json=> {
 
         Ok(json)
